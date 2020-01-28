@@ -1,4 +1,4 @@
-# Method Logger
-A very fast way to generate method call strings with parameter values that can be used in applications for logging method/code block calls and execution times.
+# Poor Mans Logger
+A fast and simple way to profile code with logging of execution time and parameter values.
 
 C# .NET Core 3.1
