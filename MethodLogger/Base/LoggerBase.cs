@@ -6,87 +6,69 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
-namespace MethodLogger
+namespace PoorMansLogger.Base
 {
-
-    /// <summary>
-    /// A quick way to time blocks of code in DEBUG mode with minimal code
-    /// </summary>
-    public class DebugLogger : ILogger
+    public abstract class LoggerBase
     {
-        private List<LoggerElement> Elements { get; set; } = new List<LoggerElement>();
+        protected List<LoggerElement> Elements { get; set; } = new List<LoggerElement>();
 
         public string Prefix { get; set; }
-
         public int IndentNumber { get; set; }
-
         public int MaxElementsIfNonNumericList { get; set; } = 0;
         public int MaxElementsIfNumericList { get; set; } = 0;
         public int MaxStringLength { get; set; } = 0;
-
         public bool DisplayStartMessages { get; set; } = true;
-               
 
-
-        public string Start(string methodName, params object[] MethodParameterValues)
+        public string ParamValuesToString(params object[] parameterValues)
         {
-
-#if DEBUG
             StringBuilder sb = new StringBuilder();
-
-            if (methodName == null)
-            {
-                StackTrace stackTrace = new StackTrace();
-                methodName = stackTrace.GetFrame(1).GetMethod().Name.Replace("()", "");
-            }            
-
-            sb.Append(methodName + "(");
-
-            if (MethodParameterValues != null && MethodParameterValues.Count() > 0)
+            if (parameterValues != null && parameterValues.Count() > 0)
             {
                 string v;
                 int c = 0;
-                foreach (object o in MethodParameterValues)
+                foreach (object o in parameterValues)
                 {
                     c++;
                     if (c > 1) sb.Append(", ");
 
                     if (o != null)
                     {
+
                         v = MaxString(o.ToString(), MaxStringLength);
 
                         Type t = o.GetType();
-                        //Type i = t.GetInterface("ilist", true); // Note: this slows down the method
 
-                        if (t.Equals(typeof(int)) || t.Equals(typeof(long)) || t.Equals(typeof(decimal)) || t.Equals(typeof(double)))
+                        if (t.Equals(typeof(int)) || t.Equals(typeof(long)) || t.Equals(typeof(decimal)) || t.Equals(typeof(double)) || t.Equals(typeof(bool)))
                             sb.Append(v);
 
                         else if (t.Equals(typeof(DateTime)) || t.Equals(typeof(TimeSpan)) || t.Equals(typeof(string)))
                             sb.Append("\"" + v + "\"");
 
+                        // As for the following, I havent figured out a way to cast an object to a generic list to avoid all the repetative else ifs 
+
                         else if (t.Equals(typeof(List<int>)))
-                            sb.Append(GetList((IList<int>)o, false, MaxElementsIfNumericList, MaxStringLength));
+                            sb.Append(GetList((IList<int>)o, false));
 
                         else if (t.Equals(typeof(List<string>)))
-                            sb.Append(GetList((IList<string>)o, true, MaxElementsIfNonNumericList, MaxStringLength));
+                            sb.Append(GetList((IList<string>)o, true));
 
                         else if (t.Equals(typeof(List<long>)))
-                            sb.Append(GetList((IList<long>)o, false, MaxElementsIfNumericList, MaxStringLength));
+                            sb.Append(GetList((IList<long>)o, false));
 
                         else if (t.Equals(typeof(List<decimal>)))
-                            sb.Append(GetList((IList<decimal>)o, false, MaxElementsIfNumericList, MaxStringLength));
+                            sb.Append(GetList((IList<decimal>)o, false));
 
                         else if (t.Equals(typeof(List<double>)))
-                            sb.Append(GetList((IList<double>)o, false, MaxElementsIfNumericList, MaxStringLength));
+                            sb.Append(GetList((IList<double>)o, false));
+
+                        else if (t.Equals(typeof(List<bool>)))
+                            sb.Append(GetList((IList<bool>)o, false));
 
                         else if (t.Equals(typeof(List<DateTime>)))
-                            sb.Append(GetList((IList<DateTime>)o, true, MaxElementsIfNonNumericList, MaxStringLength));
+                            sb.Append(GetList((IList<DateTime>)o, true));
 
                         else if (t.Equals(typeof(List<TimeSpan>)))
-                            sb.Append(GetList((IList<TimeSpan>)o, true, MaxElementsIfNonNumericList, MaxStringLength));
-
-                        else
-                            sb.Append("[" + t.ToString() + "]");
+                            sb.Append(GetList((IList<TimeSpan>)o, true));
                     }
                     else
                     {
@@ -95,63 +77,8 @@ namespace MethodLogger
                 }
             }
 
-            sb.Append(")");
-
-            methodName = sb.ToString();
-
-            if (methodName.Trim() != "")
-            {
-                string indent = "";
-                for (int x = 0; x < IndentNumber; x++)
-                {
-                    indent += "\t";
-                }
-                Elements.Add(new LoggerElement(Prefix == "" ? methodName : Prefix + " -> " + methodName, indent, DisplayStartMessages));
-            }
-
-#endif
-            return methodName;
+            return sb.ToString();
         }
-
-
-        public void Stop(string MethodName)
-        {
-            long ret = 0;
-#if DEBUG
-            if (MethodName == null)
-            {
-                StackTrace stackTrace = new StackTrace();
-                MethodName = stackTrace.GetFrame(1).GetMethod().Name.Replace("()", "");
-            }
-
-            if (MethodName.Trim() != "")
-            {
-                MethodName = Prefix == "" ? MethodName : Prefix + " -> " + MethodName;
-
-                LoggerElement swe = Elements.Where(x => x.MethodName == MethodName).FirstOrDefault();
-                if (swe != null)
-                {
-                    ret = swe.Stop();
-                    Debug.WriteLine("******** Completed: " + swe.Indent + swe.ShortName + "() took [" + String.Format("{0:n0}", ret) + "ms] to execute.");
-                    Elements.Remove(swe);
-                }
-                else
-                {
-                    Debug.WriteLine("******** Oops     : " + MethodName + "() was not found in the stop watch stack.");
-                }
-            }
-#endif
-        }
-
-
-        public void WriteMessage(string Message)
-        {
-#if DEBUG
-            if (Message != null & Message.Trim() != "")
-                Debug.WriteLine("******** Message  : " + Message);
-#endif
-        }
-
         /// <summary>
         /// Trims a string down to maxStringLengh IF maxStringLength is greater than 0
         /// </summary>
@@ -164,7 +91,7 @@ namespace MethodLogger
         }
 
         /// <summary>
-        /// Converts a generic List of objects into a comma delimited string of string
+        /// Converts a generic List of objects into a comma delimited string of strings
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list">The generic List to be converted</param>
@@ -172,20 +99,23 @@ namespace MethodLogger
         /// <param name="maxElements">The maximum number of elements to convert and append to the string</param>
         /// <param name="maxStringLength">Values will be trimmed to a max string length of X, or use 0 for no trimming</param>
         /// <returns>A string that represents the values within a generic List</returns>
-        private string GetList<T>(IList<T> list, bool treatAsString, int maxElements = 0, int maxStringLength = 0)
+        private string GetList<T>(IList<T> list, bool treatAsString, int? maxElements = null, int? maxStringLength = null)
         {
             StringBuilder sb = new StringBuilder();
             string wrap = treatAsString ? "\"" : "";
 
+            maxElements = maxElements == null ? (treatAsString ? MaxElementsIfNonNumericList : MaxElementsIfNumericList) : maxElements;
+            maxStringLength = maxStringLength == null ? MaxStringLength : maxStringLength;
+
             sb.Append("[");
             int c = 0;
-            
+
             foreach (var i in list)
             {
                 c++;
                 if (c > 1) sb.Append(", ");
 
-                sb.Append(wrap + MaxString(i.ToString(), maxStringLength) + wrap);
+                sb.Append(wrap + MaxString(i.ToString(), (int)maxStringLength) + wrap);
 
                 if (c == maxElements && maxElements != 0)
                 {
@@ -199,7 +129,7 @@ namespace MethodLogger
         }
 
 
-        private class LoggerElement
+        protected class LoggerElement
         {
             public Stopwatch Watch { get; set; } = new Stopwatch();
             public string MethodName { get; set; }
@@ -216,8 +146,8 @@ namespace MethodLogger
                 {
                     ShortName = methodName.Substring(0, beforeParen);
                 }
-                
-                Watch.Start();                
+
+                Watch.Start();
                 if (displayMessage) Debug.WriteLine("******** Started  : " + indent + MethodName + (MethodName.Contains("(") ? "" : "()") + " ...");
             }
 
