@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace PoorMansLogger.Interface
 {
     public interface ILogger
     {
+        /// <summary>
+        /// When in Debug mode, logging and timing code will be executed. When in Release mode, this code will be skipped (for performance)
+        /// </summary>
+        Base.LoggerBase.Modes Mode { get; set; }
+
         /// <summary>
         /// A string that should be added to the begining of each code block name in the log
         /// </summary>

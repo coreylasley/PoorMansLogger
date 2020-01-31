@@ -19,34 +19,36 @@ namespace PoorMansLogger.Implementation
         public string Start(string codeBlockName, params object[] parameterValuesToBLogged)
         {
 
-#if DEBUG
-            StringBuilder sb = new StringBuilder();
-
-            if (codeBlockName == null)
+            if (Mode == Modes.Debug)
             {
-                StackTrace stackTrace = new StackTrace();
-                codeBlockName = stackTrace.GetFrame(1).GetMethod().Name.Replace("()", "");
-            }
+                StringBuilder sb = new StringBuilder();
 
-            sb.Append(codeBlockName + "(");
-
-            sb.Append(ParamValuesToString(parameterValuesToBLogged));
-
-            sb.Append(")");
-
-            codeBlockName = sb.ToString();
-
-            if (codeBlockName.Trim() != "")
-            {
-                string indent = "";
-                for (int x = 0; x < IndentNumber; x++)
+                if (codeBlockName == null)
                 {
-                    indent += "\t";
+                    StackTrace stackTrace = new StackTrace();
+                    codeBlockName = stackTrace.GetFrame(1).GetMethod().Name.Replace("()", "");
                 }
-                Elements.Add(new LoggerElement(Prefix == "" ? codeBlockName : Prefix + " -> " + codeBlockName, indent, DisplayStartMessages));
+
+                sb.Append(codeBlockName + "(");
+
+                sb.Append(ParamValuesToString(parameterValuesToBLogged));
+
+                sb.Append(")");
+
+                codeBlockName = sb.ToString();
+
+                if (codeBlockName.Trim() != "")
+                {
+                    string indent = "";
+                    for (int x = 0; x < IndentNumber; x++)
+                    {
+                        indent += "\t";
+                    }
+                    Elements.Add(new LoggerElement(Prefix == "" ? codeBlockName : Prefix + " -> " + codeBlockName, indent, DisplayStartMessages));
+                }
+
             }
 
-#endif
             return codeBlockName;
         }
 
@@ -54,31 +56,33 @@ namespace PoorMansLogger.Implementation
         public double Stop(string codeBlockName)
         {
             double ret = 0;
-#if DEBUG
-            if (codeBlockName == null)
-            {
-                StackTrace stackTrace = new StackTrace();
-                codeBlockName = stackTrace.GetFrame(1).GetMethod().Name.Replace("()", "");
-            }
 
-            if (codeBlockName.Trim() != "")
+            if (Mode == Modes.Debug)
             {
-                codeBlockName = Prefix == "" ? codeBlockName : Prefix + " -> " + codeBlockName;
-
-                LoggerElement swe = Elements.Where(x => x.MethodName == codeBlockName).FirstOrDefault();
-                if (swe != null)
+                if (codeBlockName == null)
                 {
-                    ret = swe.Stop();                    
-                    Debug.WriteLine("******** Completed: " + swe.Indent + swe.ShortName + "() took [" + ret + "ms] to execute.");
-                    
-                    Elements.Remove(swe);
+                    StackTrace stackTrace = new StackTrace();
+                    codeBlockName = stackTrace.GetFrame(1).GetMethod().Name.Replace("()", "");
                 }
-                else
+
+                if (codeBlockName.Trim() != "")
                 {
-                    Debug.WriteLine("******** Oops     : " + codeBlockName + "() was not found in the stop watch stack.");
+                    codeBlockName = Prefix == "" ? codeBlockName : Prefix + " -> " + codeBlockName;
+
+                    LoggerElement swe = Elements.Where(x => x.MethodName == codeBlockName).FirstOrDefault();
+                    if (swe != null)
+                    {
+                        ret = swe.Stop();
+                        Debug.WriteLine("******** Completed: " + swe.Indent + swe.ShortName + "() took [" + ret + "ms] to execute.");
+
+                        Elements.Remove(swe);
+                    }
+                    else
+                    {
+                        Debug.WriteLine("******** Oops     : " + codeBlockName + "() was not found in the stop watch stack.");
+                    }
                 }
             }
-#endif
             return ret;
         }
             
@@ -90,10 +94,11 @@ namespace PoorMansLogger.Implementation
 
         public void WriteMessage(string Message)
         {
-#if DEBUG
-            if (Message != null & Message.Trim() != "")
-                Debug.WriteLine("******** Message  : " + Message);
-#endif
+            if (Mode == Modes.Debug)
+            {
+                if (Message != null & Message.Trim() != "")
+                    Debug.WriteLine("******** Message  : " + Message);
+            }
         }
 
         /// <summary>

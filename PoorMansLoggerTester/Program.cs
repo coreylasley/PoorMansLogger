@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Linq;
-using PoorMansLogger;
 using PoorMansLogger.Interface;
 using PoorMansLogger.Implementation;
 
@@ -44,7 +40,7 @@ namespace PoorMansLogger
 
             Console.WriteLine("Look at the Output window in the IDE to see the output of the logger.....");
 
-            ILogger dl = new DebugLogger { Prefix = "Program", MaxElementsIfNonNumericList = 5, MaxElementsIfNumericList = 25, MaxStringLength = 100 };
+            ILogger dl = new DebugLogger { Mode = Base.LoggerBase.Modes.Debug, Prefix = "Program", MaxElementsIfNonNumericList = 5, MaxElementsIfNumericList = 25, MaxStringLength = 100 };
 
             double totalMS = 0;
 
@@ -52,47 +48,50 @@ namespace PoorMansLogger
 
             Console.WriteLine("Starting Tests. Each test will average the time cost of the logger over " + loops + " loops...");
 
-            // Lets run the test xxx times
-            for (int y = 0; y < loops; y++)
+            for (int z = 0; z < 10; z++)
             {
-                // We are going to pass in null as the first parameter, so that the method name will be pulled off the stack, additionally a bunch of parameter values
-                string method = dl.Start(null, 12345, 987.432, "A test string!!", c, dts, ints, null, list);
+                // Lets run the test xxx times
+                for (int y = 0; y < loops; y++)
+                {
+                    // We are going to pass in null as the first parameter, so that the method name will be pulled off the stack, additionally a bunch of parameter values
+                    string method = dl.Start(null, 12345, 987.432, "A test string!!", c, dts, ints, null, list);
 
-                // We are going to pass in a method name in this instance, with a bunch of random parameter values
-                string method2 = dl.Start("MyMethod", "another test", 1, 2, 3, null, c, list, 3939.29983, dts);
+                    // We are going to pass in a method name in this instance, with a bunch of random parameter values
+                    string method2 = dl.Start("MyMethod", "another test", 1, 2, 3, null, c, list, 3939.29983, dts);
 
-                string method3 = dl.Start("MethodWithNoParams");
+                    string method3 = dl.Start("MethodWithNoParams");
 
-                totalMS += dl.Stop(method);
+                    totalMS += dl.Stop(method);
 
-                totalMS += dl.Stop(method2);
+                    totalMS += dl.Stop(method2);
 
-                totalMS += dl.Stop(method3);  
+                    totalMS += dl.Stop(method3);
+                }
+
+                Console.WriteLine("3 Different Calls per loop = " + totalMS / (loops * 3) + " Average ms");
+
+
+                totalMS = 0;
+                // Lets run the test xxx times
+                for (int y = 0; y < loops; y++)
+                {
+                    string method = dl.Start(null, 12345, 987.432, "A test string!!", c, dts, ints, null, list, true, false, ints);
+                    totalMS += dl.Stop(method);
+                }
+
+                Console.WriteLine("1 call with code block name pulled from stack trace with 11 parameters per loop = " + totalMS / (loops * 3) + " Average ms");
+
+
+                totalMS = 0;
+                // Lets run the test xxx times
+                for (int y = 0; y < loops; y++)
+                {
+                    string method = dl.Start("MethodWithNoParams");
+                    totalMS += dl.Stop(method);
+                }
+
+                Console.WriteLine("1 call with 8 parameters per loop = " + totalMS / (loops * 3) + " Average ms");
             }
-
-            Console.WriteLine("3 Different Calls per loop = " + totalMS / (loops * 3) + " Average ms");
-
-
-            totalMS = 0;
-            // Lets run the test xxx times
-            for (int y = 0; y < loops; y++)
-            {
-                string method = dl.Start(null, 12345, 987.432, "A test string!!", c, dts, ints, null, list, true, false, ints);
-                totalMS += dl.Stop(method);                                
-            }
-
-            Console.WriteLine("1 call with code block name pulled from stack trace with 11 parameters per loop = " + totalMS / (loops * 3) + " Average ms");
-
-            
-            totalMS = 0;
-            // Lets run the test xxx times
-            for (int y = 0; y < loops; y++)
-            {
-                string method = dl.Start("MethodWithNoParams");
-                totalMS += dl.Stop(method);
-            }
-
-            Console.WriteLine("1 call with 8 parameters per loop = " + totalMS / (loops * 3) + " Average ms");
         }
       
     }

@@ -3,15 +3,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 
 namespace PoorMansLogger.Base
 {
     public abstract class LoggerBase
     {
+
+        public enum Modes
+        {
+            Debug,
+            Release
+        }
+
         protected List<LoggerElement> Elements { get; set; } = new List<LoggerElement>();
 
+        public Modes Mode { get; set; } = Modes.Debug;
         public string Prefix { get; set; }
         public int IndentNumber { get; set; }
         public int MaxElementsIfNonNumericList { get; set; } = 0;
@@ -43,10 +50,10 @@ namespace PoorMansLogger.Base
 
                         Type t = o.GetType();
 
-                        if (t.Equals(typeof(int)) 
-                            || t.Equals(typeof(long)) 
-                            || t.Equals(typeof(decimal)) 
-                            || t.Equals(typeof(double)) 
+                        if (t.Equals(typeof(int))
+                            || t.Equals(typeof(long))
+                            || t.Equals(typeof(decimal))
+                            || t.Equals(typeof(double))
                             || t.Equals(typeof(bool))
                             || t.Equals(typeof(byte))
                             || t.Equals(typeof(float))
@@ -106,6 +113,9 @@ namespace PoorMansLogger.Base
 
                         else if (t.Equals(typeof(List<TimeSpan>)))
                             sb.Append(GetList((IList<TimeSpan>)o, true));
+
+                        else
+                            sb.Append("[" + t.Name + "]");
                     }
                     else
                     {
@@ -145,14 +155,15 @@ namespace PoorMansLogger.Base
             maxStringLength = maxStringLength == null ? MaxStringLength : maxStringLength;
 
             sb.Append("[");
-            int c = 0;
+            
+            // I belive that a for loop is actually faster than a foreach
 
-            foreach (var i in list)
+            for (int c = 0; c < list.Count; c++)
             {
                 c++;
                 if (c > 1) sb.Append(", ");
 
-                sb.Append(wrap + MaxString(i.ToString(), (int)maxStringLength) + wrap);
+                sb.Append(wrap + MaxString(list[c].ToString(), (int)maxStringLength) + wrap);
 
                 if (c == maxElements && maxElements != 0)
                 {

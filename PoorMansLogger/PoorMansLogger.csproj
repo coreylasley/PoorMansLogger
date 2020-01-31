@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Corey Lasley</Authors>
+    <Company>coreylasley.com</Company>
+    <Description>Poor Man's Logger is a way to profile code blocks while in debug mode, in which execution times and parameter values can be displayed in the Output window of the IDE with minimal code.</Description>
+    <PackageProjectUrl>https://www.coreylasley.com</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/coreylasley/PoorMansLogger</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
