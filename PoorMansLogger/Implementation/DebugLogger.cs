@@ -51,9 +51,9 @@ namespace PoorMansLogger.Implementation
         }
 
 
-        public void Stop(string codeBlockName)
+        public double Stop(string codeBlockName)
         {
-            long ret = 0;
+            double ret = 0;
 #if DEBUG
             if (codeBlockName == null)
             {
@@ -68,8 +68,9 @@ namespace PoorMansLogger.Implementation
                 LoggerElement swe = Elements.Where(x => x.MethodName == codeBlockName).FirstOrDefault();
                 if (swe != null)
                 {
-                    ret = swe.Stop();
-                    Debug.WriteLine("******** Completed: " + swe.Indent + swe.ShortName + "() took [" + String.Format("{0:n0}", ret) + "ms] to execute.");
+                    ret = swe.Stop();                    
+                    Debug.WriteLine("******** Completed: " + swe.Indent + swe.ShortName + "() took [" + ret + "ms] to execute.");
+                    
                     Elements.Remove(swe);
                 }
                 else
@@ -78,6 +79,7 @@ namespace PoorMansLogger.Implementation
                 }
             }
 #endif
+            return ret;
         }
             
 

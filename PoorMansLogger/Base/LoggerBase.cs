@@ -19,6 +19,11 @@ namespace PoorMansLogger.Base
         public int MaxStringLength { get; set; } = 0;
         public bool DisplayStartMessages { get; set; } = true;
 
+        /// <summary>
+        /// Converts an unlimited number of parameters to a comma delimited string. NOTE: Adding parameterValues introduces what is known as boxing which can degrade performance. 
+        /// </summary>
+        /// <param name="parameterValues"></param>
+        /// <returns></returns>
         public string ParamValuesToString(params object[] parameterValues)
         {
             StringBuilder sb = new StringBuilder();
@@ -38,10 +43,21 @@ namespace PoorMansLogger.Base
 
                         Type t = o.GetType();
 
-                        if (t.Equals(typeof(int)) || t.Equals(typeof(long)) || t.Equals(typeof(decimal)) || t.Equals(typeof(double)) || t.Equals(typeof(bool)))
+                        if (t.Equals(typeof(int)) 
+                            || t.Equals(typeof(long)) 
+                            || t.Equals(typeof(decimal)) 
+                            || t.Equals(typeof(double)) 
+                            || t.Equals(typeof(bool))
+                            || t.Equals(typeof(byte))
+                            || t.Equals(typeof(float))
+                            || t.Equals(typeof(uint))
+                            || t.Equals(typeof(ulong))
+                            || t.Equals(typeof(short))
+                            || t.Equals(typeof(ushort))
+                            || t.Equals(typeof(sbyte)))
                             sb.Append(v);
 
-                        else if (t.Equals(typeof(DateTime)) || t.Equals(typeof(TimeSpan)) || t.Equals(typeof(string)))
+                        else if (t.Equals(typeof(DateTime)) || t.Equals(typeof(TimeSpan)) || t.Equals(typeof(string)) || t.Equals(typeof(char)))
                             sb.Append("\"" + v + "\"");
 
                         // As for the following, I havent figured out a way to cast an object to a generic list to avoid all the repetative else ifs 
@@ -52,6 +68,9 @@ namespace PoorMansLogger.Base
                         else if (t.Equals(typeof(List<string>)))
                             sb.Append(GetList((IList<string>)o, true));
 
+                        else if (t.Equals(typeof(List<char>)))
+                            sb.Append(GetList((IList<char>)o, false));
+
                         else if (t.Equals(typeof(List<long>)))
                             sb.Append(GetList((IList<long>)o, false));
 
@@ -61,8 +80,26 @@ namespace PoorMansLogger.Base
                         else if (t.Equals(typeof(List<double>)))
                             sb.Append(GetList((IList<double>)o, false));
 
+                        else if (t.Equals(typeof(List<float>)))
+                            sb.Append(GetList((IList<float>)o, false));
+
+                        else if (t.Equals(typeof(List<short>)))
+                            sb.Append(GetList((IList<short>)o, false));
+
+                        else if (t.Equals(typeof(List<uint>)))
+                            sb.Append(GetList((IList<uint>)o, false));
+
+                        else if (t.Equals(typeof(List<ulong>)))
+                            sb.Append(GetList((IList<ulong>)o, false));
+
                         else if (t.Equals(typeof(List<bool>)))
                             sb.Append(GetList((IList<bool>)o, false));
+
+                        else if (t.Equals(typeof(List<byte>)))
+                            sb.Append(GetList((IList<byte>)o, false));
+
+                        else if (t.Equals(typeof(List<sbyte>)))
+                            sb.Append(GetList((IList<sbyte>)o, false));
 
                         else if (t.Equals(typeof(List<DateTime>)))
                             sb.Append(GetList((IList<DateTime>)o, true));
@@ -151,10 +188,10 @@ namespace PoorMansLogger.Base
                 if (displayMessage) Debug.WriteLine("******** Started  : " + indent + MethodName + (MethodName.Contains("(") ? "" : "()") + " ...");
             }
 
-            public long Stop()
+            public double Stop()
             {
                 Watch.Stop();
-                return Watch.ElapsedMilliseconds;
+                return Watch.Elapsed.TotalMilliseconds;
             }
         }
 

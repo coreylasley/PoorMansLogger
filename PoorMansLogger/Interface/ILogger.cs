@@ -37,7 +37,7 @@ namespace PoorMansLogger.Interface
         bool DisplayStartMessages { get; set; }
 
         //// <summary>
-        /// Starts the stop watch for a given code block 
+        /// Starts the stop watch for a given code block. NOTE: Adding parameterValuesToBeBlogged introduces what is known as boxing which can degrade performance 
         /// </summary>
         /// <param name="codeBlockName">The name of the code block, set as null to pull the calling method name from the Stack Trace</param>
         /// <param name="parameterValuesToLog">unlimited list of object values to be listed in the log</param>
@@ -48,7 +48,7 @@ namespace PoorMansLogger.Interface
         /// Stops the stop watch on a given code block and logs the execution length in milliseconds
         /// </summary>
         /// <param name="codeBlockName">The name of the code block, leave as null to pull the calling method's name from the Stack Trace</param>
-        void Stop(string codeBlockName);
+        double Stop(string codeBlockName);
 
         /// <summary>
         /// Returns an unlimited list of object values as a string for common types
