@@ -1,13 +1,11 @@
 ﻿
+using System.Diagnostics;
+
 namespace PoorMansLogger.Interface
 {
     public interface ILogger
     {
-        /// <summary>
-        /// When in Debug mode, logging and timing code will be executed. When in Release mode, this code will be skipped (for performance)
-        /// </summary>
-        Base.LoggerBase.Modes Mode { get; set; }
-
+        
         /// <summary>
         /// A string that should be added to the begining of each code block name in the log
         /// </summary>
@@ -44,13 +42,13 @@ namespace PoorMansLogger.Interface
         /// <param name="codeBlockName">The name of the code block, set as null to pull the calling method name from the Stack Trace</param>
         /// <param name="parameterValuesToLog">unlimited list of object values to be listed in the log</param>
         /// <returns>A string to be used when calling the Stop() method</returns>
-        string Start(string codeBlockName, params object[] parameterValuesToBLogged);
+        long Start(string codeBlockName, params object[] parameterValuesToBLogged);
 
         /// <summary>
         /// Stops the stop watch on a given code block and logs the execution length in milliseconds
         /// </summary>
         /// <param name="codeBlockName">The name of the code block, leave as null to pull the calling method's name from the Stack Trace</param>
-        double Stop(string codeBlockName);
+        double Stop(long ID);
 
         /// <summary>
         /// Returns an unlimited list of object values as a string for common types

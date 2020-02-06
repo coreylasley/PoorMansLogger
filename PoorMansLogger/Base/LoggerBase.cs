@@ -10,15 +10,8 @@ namespace PoorMansLogger.Base
     public abstract class LoggerBase
     {
 
-        public enum Modes
-        {
-            Debug,
-            Release
-        }
-
         protected List<LoggerElement> Elements { get; set; } = new List<LoggerElement>();
 
-        public Modes Mode { get; set; } = Modes.Debug;
         public string Prefix { get; set; }
         public int IndentNumber { get; set; }
         public int MaxElementsIfNonNumericList { get; set; } = 0;
@@ -27,10 +20,11 @@ namespace PoorMansLogger.Base
         public bool DisplayStartMessages { get; set; } = true;
 
         /// <summary>
-        /// Converts an unlimited number of parameters to a comma delimited string. NOTE: Adding parameterValues introduces what is known as boxing which can degrade performance. 
+        /// Converts an unlimited number of parameters to a comma delimited string. 
+        /// NOTE: Adding parameterValues introduces reflection and boxing which can degrade performance. 
         /// </summary>
         /// <param name="parameterValues"></param>
-        /// <returns></returns>
+        /// <returns></returns>                
         public string ParamValuesToString(params object[] parameterValues)
         {
             StringBuilder sb = new StringBuilder();
@@ -67,7 +61,7 @@ namespace PoorMansLogger.Base
                         else if (t.Equals(typeof(DateTime)) || t.Equals(typeof(TimeSpan)) || t.Equals(typeof(string)) || t.Equals(typeof(char)))
                             sb.Append("\"" + v + "\"");
 
-                        // As for the following, I havent figured out a way to cast an object to a generic list to avoid all the repetative else ifs 
+                        // As for the following, I havent figured out a way to cast an object to a generic list to avoid all the repetative else/ifs                   
 
                         else if (t.Equals(typeof(List<int>)))
                             sb.Append(GetList((IList<int>)o, false));
@@ -113,16 +107,16 @@ namespace PoorMansLogger.Base
 
                         else if (t.Equals(typeof(List<TimeSpan>)))
                             sb.Append(GetList((IList<TimeSpan>)o, true));
-
                         else
-                            sb.Append("[" + t.Name + "]");
+                            sb.Append("[" + v + "]");
                     }
                     else
                     {
                         sb.Append("null");
-                    }
+                    }                                        
                 }
             }
+                     
 
             return sb.ToString();
         }
@@ -159,9 +153,8 @@ namespace PoorMansLogger.Base
             // I belive that a for loop is actually faster than a foreach
 
             for (int c = 0; c < list.Count; c++)
-            {
-                c++;
-                if (c > 1) sb.Append(", ");
+            {                
+                if (c > 0) sb.Append(", ");
 
                 sb.Append(wrap + MaxString(list[c].ToString(), (int)maxStringLength) + wrap);
 
@@ -178,31 +171,30 @@ namespace PoorMansLogger.Base
 
 
         protected class LoggerElement
-        {
-            public Stopwatch Watch { get; set; } = new Stopwatch();
-            public string MethodName { get; set; }
+        {            
+            public long ID { get; set; }
+            public string CodeBlockName { get; set; }
+            public string ParamValues { get; set; }
             public string Indent { get; set; }
-            public string ShortName { get; set; }
+            
 
-            public LoggerElement(string methodName, string indent, bool displayMessage)
+            private long startTime { get; set; }
+
+            public LoggerElement(long id, string codeBlockName, string paramValues, string indent, bool displayMessage)
             {
+                ID = id;
                 Indent = indent;
-                MethodName = methodName;
+                CodeBlockName = codeBlockName;
+                ParamValues = paramValues;
 
-                int beforeParen = methodName.IndexOf("(");
-                if (beforeParen > 0)
-                {
-                    ShortName = methodName.Substring(0, beforeParen);
-                }
-
-                Watch.Start();
-                if (displayMessage) Debug.WriteLine("******** Started  : " + indent + MethodName + (MethodName.Contains("(") ? "" : "()") + " ...");
+                startTime = Stopwatch.GetTimestamp();
+                if (displayMessage) Debug.WriteLine("******** Started  : " + indent + CodeBlockName + (paramValues != "" ? paramValues : "()") + " ...");
             }
 
             public double Stop()
             {
-                Watch.Stop();
-                return Watch.Elapsed.TotalMilliseconds;
+                long stopTime = Stopwatch.GetTimestamp();
+                return (stopTime - startTime) / 10000;
             }
         }
 
